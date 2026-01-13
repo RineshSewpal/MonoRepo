@@ -59,4 +59,27 @@ describe("normalizeKey", () => {
         const input = "  Hello   World!  ";
         expect(normalizeKey(input)).toBe(normalizeKey(input));
     });
+
+    it("removes unicode characters", () => {
+        expect(normalizeKey("café")).toBe("caf");
+        expect(normalizeKey("naïve")).toBe("nave");
+        expect(normalizeKey("你好")).toBe("");
+        expect(normalizeKey("résumé")).toBe("rsum");
+    });
+
+    it("removes punctuation", () => {
+        expect(normalizeKey("hello, world!")).toBe("hello_world");
+        expect(normalizeKey("what???")).toBe("what");
+        expect(normalizeKey("end.")).toBe("end");
+        expect(normalizeKey("(test)")).toBe("test");
+    });
+
+    it("handles multiple and mixed whitespace correctly", () => {
+        expect(normalizeKey("a    b     c")).toBe("a_b_c");
+        expect(normalizeKey("a\tb\tc")).toBe("a_b_c");
+        expect(normalizeKey("a\nb\nc")).toBe("a_b_c");
+        expect(normalizeKey("  a   b   ")).toBe("a_b");
+    });
+
+
 });
