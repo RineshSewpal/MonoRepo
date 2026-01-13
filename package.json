@@ -1,0 +1,9 @@
+{
+    "name": "my-monorepo",
+    "private": true,
+    "scripts": {
+        "test": "pnpm -r test",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "build": "pnpm -r build"
+    }
+}
