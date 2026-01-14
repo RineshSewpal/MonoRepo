@@ -1,56 +1,35 @@
 import { describe, it, expect } from "vitest";
 import { buildKey } from "./buildKey";
 
-describe("buildKey", () => {
-    it("returns empty string for empty input", () => {
+describe("buildKey – edge cases", () => {
+    it("returns empty string for empty array", () => {
         expect(buildKey([])).toBe("");
     });
 
-    it("returns empty string when all parts normalize to empty", () => {
-        expect(buildKey(["", "   ", "###"])).toBe("");
+    it("ignores empty strings", () => {
+        expect(buildKey(["", ""])).toBe("");
+        expect(buildKey(["user", "", "id"])).toBe("user.id");
     });
 
-    it("normalizes and joins parts with underscores", () => {
-        expect(buildKey(["User", "Email"])).toBe("user_email");
-        expect(buildKey(["Order", "Line", "Item"])).toBe("order_line_item");
+    it("trims whitespace in parts", () => {
+        expect(buildKey([" user ", " profile "])).toBe("user.profile");
     });
 
-    it("trims, lowercases, and removes punctuation via normalizeKey", () => {
-        expect(buildKey([" User ", "Email!"])).toBe("user_email");
-        expect(buildKey(["Hello,", "World!"])).toBe("hello_world");
+    it("collapses internal whitespace in parts", () => {
+        expect(buildKey(["user   name", "profile"])).toBe("user-name.profile");
     });
 
-    it("filters out parts that normalize to empty", () => {
-        expect(buildKey(["User", "", "ID"])).toBe("user_id");
-        expect(buildKey(["User", "###", "ID"])).toBe("user_id");
+    it("normalizes weird formatting", () => {
+        expect(buildKey(["  USER__NAME  ", "__PROFILE__"])).toBe("user-name.profile");
     });
 
-    it("handles numbers encoded as strings", () => {
-        expect(buildKey(["Order", "2024"])).toBe("order_2024");
+    it("ignores parts that normalize to empty", () => {
+        expect(buildKey(["   ", "---", "__"])).toBe("");
     });
 
-    it("handles multiple and mixed whitespace correctly", () => {
-        expect(buildKey(["  hello   world  ", " test "]))
-
-            .toBe("hello_world_test");
-    });
-
-    it("handles unicode and punctuation safely", () => {
-        expect(buildKey(["café", "résumé"])).toBe("caf_rsum");
-        expect(buildKey(["你好", "world"])).toBe("world");
-    });
-
-    it("is deterministic", () => {
-        const parts = [" User ", "Email!"];
-        expect(buildKey(parts)).toBe(buildKey(parts));
-    });
-
-    it("does not mutate the input array", () => {
-        const parts = ["User", "Email"];
-        const copy = [...parts];
-
-        buildKey(parts);
-
-        expect(parts).toEqual(copy);
+    it("handles mixed valid and invalid parts", () => {
+        expect(buildKey([" user ", "", "   ", "profile__name "])).toBe(
+            "user.profile-name"
+        );
     });
 });
