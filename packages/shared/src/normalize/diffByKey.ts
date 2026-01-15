@@ -1,59 +1,60 @@
-export function diffByKey<T, K extends keyof T>(
+export function diffByKey<T, K>(
     prev: readonly T[],
     next: readonly T[],
-    key: K
+    keyFn: (item: T) => K
 ): {
     added: T[];
     removed: T[];
-    updated: T[];
+    unchanged: T[];
+    updated: Array<{ before: T; after: T }>;
 } {
-    const prevMap = new Map<T[K], T>();
-    const nextMap = new Map<T[K], T>();
+    // last-write-wins maps
+    const prevMap = new Map<K, T>();
+    const nextMap = new Map<K, T>();
 
     for (const item of prev) {
-        prevMap.set(item[key], item);
+        prevMap.set(keyFn(item), item);
     }
 
     for (const item of next) {
-        nextMap.set(item[key], item);
+        nextMap.set(keyFn(item), item);
     }
 
     const added: T[] = [];
     const removed: T[] = [];
-    const updated: T[] = [];
+    const unchanged: T[] = [];
+    const updated: Array<{ before: T; after: T }> = [];
 
-    for (const [id, nextItem] of nextMap) {
-        const prevItem = prevMap.get(id);
+    // keys present in prev
+    for (const [key, prevItem] of prevMap) {
+        const nextItem = nextMap.get(key);
 
-        if (!prevItem) {
-            added.push(nextItem);
-        } else if (!shallowEqual(prevItem, nextItem)) {
-            updated.push(nextItem);
-        }
-    }
-
-    for (const [id, prevItem] of prevMap) {
-        if (!nextMap.has(id)) {
+        if (!nextItem) {
             removed.push(prevItem);
+            continue;
+        }
+
+        if (Object.is(prevItem, nextItem) || deepEqual(prevItem, nextItem)) {
+            unchanged.push(nextItem);
+        } else {
+            updated.push({ before: prevItem, after: nextItem });
         }
     }
 
-    return { added, removed, updated };
+    // keys only in next
+    for (const [key, nextItem] of nextMap) {
+        if (!prevMap.has(key)) {
+            added.push(nextItem);
+        }
+    }
+
+    return { added, removed, unchanged, updated };
 }
 
-function shallowEqual<T>(a: T, b: T): boolean {
-    if (a === b) return true;
+// simple deep equality for test expectations
+function deepEqual(a: unknown, b: unknown): boolean {
+    if (Object.is(a, b)) return true;
+    if (typeof a !== "object" || typeof b !== "object" || !a || !b) return false;
 
-    const aKeys = Object.keys(a as object);
-    const bKeys = Object.keys(b as object);
-
-    if (aKeys.length !== bKeys.length) return false;
-
-    for (const key of aKeys) {
-        if ((a as any)[key] !== (b as any)[key]) {
-            return false;
-        }
-    }
-
-    return true;
+    return JSON.stringify(a) === JSON.stringify(b);
 }
