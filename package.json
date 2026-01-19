@@ -5,5 +5,8 @@
         "test": "pnpm -r test",
         "typecheck": "tsc --noEmit -p tsconfig.json",
         "build": "pnpm -r build"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
     }
 }
