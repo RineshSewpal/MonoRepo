@@ -1,10 +1,20 @@
-// packages/shared/src/api/item.ts
-
+// The canonical Item shape used across API + clients
 export interface Item {
-    id: string;          // stable identifier
+    id: string;
     name: string;
     value: number;
+    createdAt: string; // ISO timestamp
+    updatedAt: string; // ISO timestamp
+}
 
-    createdAt: string;   // ISO 8601
-    updatedAt: string;   // ISO 8601
+// Input for POST /items
+export interface CreateItemInput {
+    name: string;
+    value: number;
+}
+
+// Input for PUT /items/:id
+export interface UpdateItemInput {
+    name?: string;
+    value?: number;
 }

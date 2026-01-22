@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        /* Language & Environment */
+        "target": "ES2022",
+        "lib": [
+            "ES2022"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        /* Strictness */
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        /* Safety & Quality */
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "useUnknownInCatchVariables": true,
+        /* Interop */
+        "esModuleInterop": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        /* Build */
+        "skipLibCheck": true
+    }
+}
