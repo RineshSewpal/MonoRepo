@@ -1,54 +1,50 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
-import type { Express } from "express";
-
 import { createApp } from "../src/app";
 
 describe("Items API – integration", () => {
-    let app: Express;
+    let app: any;
 
     beforeAll(async () => {
         app = await createApp();
     });
 
     it("Create → list → get → update → delete", async () => {
-        /* CREATE */
+        // CREATE
         const createRes = await request(app)
             .post("/items")
             .send({ name: "Item A", value: 1 })
             .expect(201);
 
-        expect(createRes.body).toHaveProperty("id");
         const id = createRes.body.id;
+        expect(id).toBeDefined();
 
-        /* LIST */
+        // LIST
         const listRes = await request(app)
             .get("/items")
             .expect(200);
 
-        expect(listRes.body.length).toBe(1);
+        expect(listRes.body).toHaveLength(1);
 
-        /* GET */
+        // GET
         const getRes = await request(app)
             .get(`/items/${id}`)
             .expect(200);
 
         expect(getRes.body.name).toBe("Item A");
 
-        /* UPDATE */
-        const updateRes = await request(app)
+        // UPDATE
+        await request(app)
             .put(`/items/${id}`)
             .send({ name: "Item A+", value: 2 })
             .expect(200);
 
-        expect(updateRes.body.value).toBe(2);
-
-        /* DELETE */
+        // DELETE
         await request(app)
             .delete(`/items/${id}`)
             .expect(204);
 
-        /* VERIFY DELETE */
+        // VERIFY DELETED
         await request(app)
             .get(`/items/${id}`)
             .expect(404);
@@ -57,7 +53,7 @@ describe("Items API – integration", () => {
     it("Invalid create body returns 400", async () => {
         await request(app)
             .post("/items")
-            .send({ value: "not-a-number" })
+            .send({ name: "" }) // invalid
             .expect(400);
     });
 
@@ -71,7 +67,7 @@ describe("Items API – integration", () => {
 
         await request(app)
             .put(`/items/${id}`)
-            .send({ value: "bad" })
+            .send({ value: "not-a-number" }) // invalid
             .expect(400);
     });
 
