@@ -4,10 +4,11 @@ import { Item } from "@my-monorepo/shared/api/item";
  * Repository interface
  * (allows swapping implementations later)
  */
+// repo/ItemRepository.ts
 export interface ItemRepository {
-    findAll(): Promise<Item[]>;
-    findById(id: string): Promise<Item | undefined>;
-    create(item: Item): Promise<Item>;
-    update(id: string, item: Item): Promise<Item>;
-    delete(id: string): Promise<void>;
+    create(input: CreateItemRequest): Promise<ItemResponse>;
+    list(): Promise<ItemResponse[]>;
+    get(id: string): Promise<ItemResponse | null>;
+    update(id: string, input: CreateItemRequest): Promise<ItemResponse | null>;
+    delete(id: string): Promise<boolean>;
 }

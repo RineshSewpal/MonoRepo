@@ -14,10 +14,16 @@ export function itemsRouter(repo: ItemRepository) {
         res.json(items);
     });
 
-    router.post("/", validateCreateItem, async (req, res) => {
-        const item = await repo.create(req.body);
-        res.status(201).json(item);
-    });
+    router.post(
+        "/",
+        validateCreateItem,
+        async (req, res) => {
+            const item = await repo.create(req.body);
+            res.status(201).json(item);
+        }
+    );
+
+
 
     router.get("/:id", async (req, res) => {
         const item = await repo.get(req.params.id);
@@ -40,3 +46,5 @@ export function itemsRouter(repo: ItemRepository) {
     // 🚨 THIS MUST EXIST
     return router;
 }
+
+
