@@ -1,88 +1,42 @@
 import { Router } from "express";
-import type {
-    Item,
-    CreateItemInput,
-    UpdateItemInput,
-} from "@myorg/shared";
-
+import type { ItemRepository } from "../repo/ItemRepository";
 import {
-    listItems,
-    getItemById,
-    createItem,
-    updateItem,
-    deleteItem,
-} from "../services/items.service";
+    validateCreateItem,
+    validateUpdateItem,
+} from "../validators/item.validators";
 
-import { validateCreateItem, validateUpdateItem } from "../validators/item.validators";
+export function itemsRouter(repo: ItemRepository) {
+    const router = Router();
 
-const router = Router();
+    // ✅ LIST (THIS IS WHAT IS FAILING)
+    router.get("/", async (_req, res) => {
+        const items = await repo.list();
+        res.json(items);
+    });
 
-/**
- * GET /items
- */
-router.get("/", async (_req, res) => {
-    const items: Item[] = await listItems();
-    res.json(items);
-});
+    router.post("/", validateCreateItem, async (req, res) => {
+        const item = await repo.create(req.body);
+        res.status(201).json(item);
+    });
 
-/**
- * GET /items/:id
- */
-router.get("/:id", async (req, res) => {
-    const item = await getItemById(req.params.id);
+    router.get("/:id", async (req, res) => {
+        const item = await repo.get(req.params.id);
+        if (!item) return res.sendStatus(404);
+        res.json(item);
+    });
 
-    if (!item) {
-        return res.status(404).json({
-            code: "NOT_FOUND",
-            message: "Item not found",
-        });
-    }
+    router.put("/:id", validateUpdateItem, async (req, res) => {
+        const item = await repo.update(req.params.id, req.body);
+        if (!item) return res.sendStatus(404);
+        res.json(item);
+    });
 
-    res.json(item);
-});
+    router.delete("/:id", async (req, res) => {
+        const ok = await repo.delete(req.params.id);
+        if (!ok) return res.sendStatus(404);
+        res.sendStatus(204);
+    });
 
-/**
- * POST /items
- */
-router.post("/", async (req, res) => {
-    const input: CreateItemInput = validateCreateItem(req.body);
-
-    const item = await createItem(input);
-    res.status(201).json(item);
-});
-
-/**
- * PUT /items/:id
- */
-router.put("/:id", async (req, res) => {
-    const input: UpdateItemInput = validateUpdateItem(req.body);
-
-    const item = await updateItem(req.params.id, input);
-
-    if (!item) {
-        return res.status(404).json({
-            code: "NOT_FOUND",
-            message: "Item not found",
-        });
-    }
-
-    res.json(item);
-});
-
-/**
- * DELETE /items/:id
- */
-router.delete("/:id", async (req, res) => {
-    const deleted = await deleteItem(req.params.id);
-
-    if (!deleted) {
-        return res.status(404).json({
-            code: "NOT_FOUND",
-            message: "Item not found",
-        });
-    }
-
-    res.status(204).send();
-});
-
-export default router;
+    // 🚨 THIS MUST EXIST
+    return router;
+}

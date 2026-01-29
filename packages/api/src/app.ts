@@ -1,21 +1,19 @@
+// packages/api/src/app.ts
 import express from "express";
-import cors from "cors";
+import type { Express } from "express";
 
-import { registerRoutes } from "./routes";
-import { errorHandler } from "./middleware/errorHandler";
+import { createItemRepo } from "./repo";
+import { itemsRouter } from "./routes/items.routes"; // ✅ named import
 
-export function createApp() {
+
+export async function createApp(): Promise<Express> {
     const app = express();
 
-    // ---- global middleware ----
-    app.use(cors());
     app.use(express.json());
 
-    // ---- routes ----
-    registerRoutes(app);
+    const repo = await createItemRepo();
 
-    // ---- error handling (last) ----
-    app.use(errorHandler);
+    app.use("/items", itemsRouter(repo));
 
     return app;
 }

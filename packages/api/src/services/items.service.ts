@@ -1,11 +1,14 @@
-import { InMemoryItemRepository } from "../repo/ItemRepository";
-import { prisma } from "../db/prisma";
-import { PrismaItemRepository } from "../repo/prismaItemRepo";
+// packages/api/src/services/items.service.ts
+import type { ItemRepository } from "../repo/ItemRepository";
+import type { CreateItemInput, UpdateItemInput } from "@my-monorepo/shared";
 
-const repo = new InMemoryItemRepository();
-
-export async function listItems() {
-    return repo.findAll();
+export function createItemsService(repo: ItemRepository) {
+    return {
+        create: (input: CreateItemInput) => repo.createItem(input),
+        list: () => repo.listItems(),
+        get: (id: string) => repo.getItem(id),
+        update: (id: string, input: UpdateItemInput) =>
+            repo.updateItem(id, input),
+        remove: (id: string) => repo.deleteItem(id),
+    };
 }
-
-export const itemRepo = new PrismaItemRepository(prisma);

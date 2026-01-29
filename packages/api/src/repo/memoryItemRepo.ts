@@ -1,28 +1,36 @@
-import { Item } from "@my-monorepo/shared/api/item";
-import { ItemRepository } from "./ItemRepository";
+import { randomUUID } from "crypto";
+import type { ItemRepository, Item } from "./ItemRepository";
 
-export class MemoryItemRepository implements ItemRepository {
+export default class MemoryItemRepo implements ItemRepository {
     private items = new Map<string, Item>();
 
-    async findAll(): Promise<Item[]> {
-        return Array.from(this.items.values());
-    }
-
-    async findById(id: string): Promise<Item | undefined> {
-        return this.items.get(id);
-    }
-
-    async create(item: Item): Promise<Item> {
+    async create(data: Omit<Item, "id">): Promise<Item> {
+        const item = { id: randomUUID(), ...data };
         this.items.set(item.id, item);
         return item;
     }
 
-    async update(id: string, item: Item): Promise<Item> {
-        this.items.set(id, item);
-        return item;
+    async list(): Promise<Item[]> {
+        return [...this.items.values()];
     }
 
-    async delete(id: string): Promise<void> {
-        this.items.delete(id);
+    async get(id: string): Promise<Item | null> {
+        return this.items.get(id) ?? null;
+    }
+
+    async update(
+        id: string,
+        data: Partial<Omit<Item, "id">>
+    ): Promise<Item | null> {
+        const existing = this.items.get(id);
+        if (!existing) return null;
+
+        const updated = { ...existing, ...data };
+        this.items.set(id, updated);
+        return updated;
+    }
+
+    async delete(id: string): Promise<boolean> {
+        return this.items.delete(id);
     }
 }

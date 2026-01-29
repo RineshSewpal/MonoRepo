@@ -7,6 +7,11 @@
         "build": "pnpm -r build"
     },
     "devDependencies": {
+        "@types/better-sqlite3": "^7.6.13",
+        "supertest": "^7.2.2",
         "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "better-sqlite3": "^12.6.2"
     }
 }
