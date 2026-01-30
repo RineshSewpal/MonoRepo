@@ -1,28 +1,18 @@
+// pages/ItemsPage.tsx
 export function ItemsPage() {
     const [items, setItems] = useState<Item[]>([]);
-    const [selected, setSelected] = useState<Item | null>(null);
-    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<ApiError | null>(null);
 
     useEffect(() => {
-        fetchItems().then(setItems);
+        fetchItems()
+            .then(setItems)
+            .catch(setError)
+            .finally(() => setLoading(false));
     }, []);
 
-    return (
-        <>
-            <ItemsSearch value={search} onChange={setSearch} />
+    if (loading) return <ItemsSkeleton />;
+    if (error) return <ErrorState message={error.message} />;
 
-            <ItemsList
-                items={items.filter(i =>
-                    i.name.toLowerCase().includes(search.toLowerCase())
-                )}
-                onSelect={setSelected}
-            />
-
-            <ItemDetailsDrawer
-                item={selected}
-                onClose={() => setSelected(null)}
-                onEdit={() => {/* open form */ }}
-            />
-        </>
-    );
+    return <ItemsList items={items} />;
 }
